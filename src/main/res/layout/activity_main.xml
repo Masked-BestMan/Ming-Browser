@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.example.myapplication.Components.DragLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/dl"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/frame_background">
+
+    <LinearLayout
+        android:id="@+id/fl_menu"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:fitsSystemWindows="true" >
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingBottom="20dp"
+            android:paddingStart="20dp"
+            android:paddingEnd="85dp"
+            android:paddingTop="45dp">
+            <LinearLayout
+                android:id="@+id/panel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="25dp">
+                <com.example.myapplication.Components.HeadPortraitView
+                    android:id="@+id/head_portrait"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:scaleType="fitXY"
+                    app:src="@drawable/default_head_portrait"
+                    android:clickable="true"
+                    android:focusable="true"/>
+                <TextView
+                    android:id="@+id/user_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+            <TextView
+                android:id="@+id/miao_shu"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:textColor="#fff"
+                android:layout_below="@id/panel"/>
+            <Button
+                android:id="@+id/config"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentStart="true"
+                android:background="@drawable/config" />
+
+            <TextView
+                android:id="@+id/now_wendu"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_above="@+id/city"
+                android:textColor="#fff"
+                android:textSize="45sp"
+                android:layout_alignParentEnd="true" />
+
+            <TextView
+                android:id="@+id/city"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="#fff"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentBottom="true"/>
+            <Button
+                android:id="@+id/app_exit"
+                android:layout_width="43dp"
+                android:layout_height="43dp"
+                android:layout_alignParentBottom="true"
+                android:layout_toEndOf="@id/config"
+                android:layout_marginStart="35dp"
+                android:background="@drawable/app_exit" />
+        </RelativeLayout>
+    </LinearLayout>
+
+    <com.example.myapplication.Components.MainContentLayout
+        android:id="@+id/mainContent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#ff000000"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="50dp"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/title_bar"
+                android:layout_width="match_parent"
+                android:layout_height="65dp">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:paddingTop="25dp">
+
+                    <Button
+                        android:id="@+id/title_left_button"
+                        android:layout_width="30dip"
+                        android:layout_height="30dip"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginTop="5dp"
+                        android:scaleType="fitXY"
+                        android:background="@drawable/title_bar_left_button" />
+
+                    <ProgressBar
+                        android:id="@+id/progress_bar"
+                        style="@android:style/Widget.Holo.ProgressBar"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_marginEnd="5dp" />
+                </RelativeLayout>
+            </LinearLayout>
+
+            <RelativeLayout
+                android:id="@+id/my_relative_layout"
+                android:clipChildren="false"
+                android:clickable="true"
+                android:focusable="true"
+                android:layerType="software"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <com.example.myapplication.Components.MyViewPager
+                    android:id="@+id/viewpager"
+                    android:clipChildren="false"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+            </RelativeLayout>
+        </LinearLayout>
+
+        <RelativeLayout
+            android:id="@+id/bottom_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_alignParentBottom="true"
+            android:background="#fff">
+            <Button
+                android:id="@+id/web_refresh"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_centerInParent="true"
+                android:background="@drawable/web_refresh" />
+            <Button
+                android:id="@+id/web_next"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="30dp"
+                android:layout_centerVertical="true"
+                android:layout_toStartOf="@id/web_refresh"
+                android:text="后"
+                 />
+            <Button
+                android:id="@+id/web_back"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="35dp"
+                android:layout_toStartOf="@id/web_next"
+                android:layout_centerVertical="true"
+                android:text="前"
+                />
+            <Button
+                android:id="@+id/multi_window"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_centerVertical="true"
+                android:layout_toEndOf="@id/web_refresh"
+                android:layout_marginStart="30dp"
+                android:background="@drawable/multi_window"/>
+            <Button
+                android:id="@+id/web_history"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_centerVertical="true"
+                android:layout_toEndOf="@id/multi_window"
+                android:layout_marginStart="35dp"
+                android:background="@drawable/web_history" />
+        </RelativeLayout>
+        <RelativeLayout
+            android:id="@+id/web_page_control_bar"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_alignParentBottom="true"
+            android:visibility="invisible">
+            <Button
+                android:id="@+id/add_web_page"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_centerInParent="true"
+                android:background="@drawable/add_web_page"/>
+        </RelativeLayout>
+    </com.example.myapplication.Components.MainContentLayout>
+</com.example.myapplication.Components.DragLayout>
