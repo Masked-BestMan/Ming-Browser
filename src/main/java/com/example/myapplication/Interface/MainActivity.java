@@ -19,6 +19,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -50,11 +51,15 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.lang.reflect.Field;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class MainActivity extends FragmentActivity implements View.OnClickListener{
     boolean first=true;  //有两种含义：第一次运行app时或标签页最后一页被删后需要重新定位当前webview对象
     private int login_flag=0;       //为1表示准备启动登陆界面
     private boolean isExit=false;    //是否在侧滑窗口关闭时退出程序
+    private long mExitTime;    //按下返回键退出时的时间
     private ProgressBar progressBar;
     private WebView webView;
     private MyViewPager mViewPager;
@@ -62,7 +67,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
     private DragLayout mDragLayout;
     private TextView now_temperature,describe,city;
     private View toolbarBackground,webPageControlBackground,title_bar;
-    private Button titleLeftButton,webBack,addWebPage,next,exit,history,multiwindow,webRefresh;
+    private Button titleLeftButton,webBack,addWebPage,next,exit,history,webStopLoading,multiwindow,webRefresh;
     private SQLiteOpenHelper mOpenHelper;
     private InputMethodManager mInputMethodManager;
     private HeadPortraitView headPortrait;
@@ -77,45 +82,14 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
         setContentView(R.layout.activity_main);
         initView();
 
-        mInputMethodManager= (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-
-        now_temperature=(TextView)findViewById(R.id.now_wendu);
-        now_temperature.setTypeface (Typeface.createFromAsset (getAssets(),"fonts/FZYTK.TTF" ));
-        describe=(TextView)findViewById(R.id.miao_shu);
-        describe.setTypeface (Typeface.createFromAsset (getAssets(),"fonts/FZYTK.TTF" ));
-        city=(TextView)findViewById(R.id.city);
-        mDragLayout = (DragLayout) findViewById(R.id.dl);
-        mDragLayout.setDrag(false);
-        ((MainContentLayout) findViewById(R.id.mainContent)).setDragLayout(mDragLayout);
-        mDragLayout.setOnLayoutDragingListener(new DragLayout.OnLayoutDragingListener() {
-            @Override
-            public void onOpen() {
-            }
-
-            @Override
-            public void onClose(){
-                if(login_flag==1){
-                    login_flag=0;
-                    startActivityForResult(new Intent(MainActivity.this,LoginActivity.class),2);
-                }
-                if(isExit)
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            finish();
-                        }
-                    },100);
-
-            }
-            @Override
-            public void onDraging(float percent) {
-                ViewHelper.setAlpha(titleLeftButton, 1 - percent);
-            }
-        });
         startService(new Intent(MainActivity.this,WeatherService.class));
+
+        //网络状态变化广播监听
         IntentFilter mFilter = new IntentFilter();
         mFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
         registerReceiver(networkChange,mFilter);
+
+        //天气结果广播监听
         IntentFilter mFilter2 =new IntentFilter();
         mFilter2.addAction("weather_refresh");
         registerReceiver(refresh,mFilter2);
@@ -151,11 +125,11 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
         super.onDestroy();
         WebPage.webpagelist.clear();
         WebPage.webViews.clear();
+        WebPage.frameLayouts.clear();
         unregisterReceiver(networkChange);
         unregisterReceiver(refresh);
     }
-    //退出时的时间
-    private long mExitTime;
+
     public void onBackPressed() {
 
         if ((System.currentTimeMillis() - mExitTime) > 2000) {
@@ -178,12 +152,15 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 
             case R.id.web_history:
                 startActivityForResult(new Intent(this, HistoryActivity.class), 1);
+                overridePendingTransition(R.anim.left_in,0);
                 break;
 
             case R.id.web_refresh:
                 webView.reload();
                 break;
-
+            case R.id.web_stopLoading:
+                webView.stopLoading();
+                break;
             case R.id.web_back:
                 webView.goBack();
                 break;
@@ -196,11 +173,14 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
                 break;
 
             case R.id.add_web_page:
-
-                WebPage.webpagelist.add(WebViewFragment.newInstance(this,initWebView()));
-                webpageAdapter.notifyDataSetChanged(WebPageAdapter.ADDWEBPAGE);
-                fixWebPage(WebPage.webpagelist.size()-1);
-                ZoomChange(1);
+                if(WebPage.webpagelist.size()>=10){
+                    Toast.makeText(this,"窗口数量超过最大值",Toast.LENGTH_SHORT).show();
+                }else{
+                    WebPage.webpagelist.add(WebViewFragment.newInstance(initWebView()));
+                    webpageAdapter.notifyDataSetChanged(WebPageAdapter.ADDWEBPAGE);
+                    fixWebPage(WebPage.webpagelist.size()-1);
+                    ZoomChange(1);
+                }
                 break;
             case R.id.app_exit:
                 isExit=true;
@@ -209,6 +189,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
             case R.id.head_portrait:
                 login_flag=1;
                 mDragLayout.close();
+
                 break;
         }
     }
@@ -216,7 +197,6 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
     private void ZoomChange(int flag) {
         //0为缩小，1为放大
         if(flag==0){
-            WebPage.isFullScreen=false;
             PropertyValuesHolder pvhX = PropertyValuesHolder.ofFloat("scaleX", 1f, 0.7f);
             PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("scaleY", 1f, 0.7f);
             ObjectAnimator scale = ObjectAnimator.ofPropertyValuesHolder(mViewPager, pvhX, pvhY);
@@ -229,7 +209,6 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
             mViewPager.setFullScreen(false);
 
         }else{
-            WebPage.isFullScreen=true;
             PropertyValuesHolder pvhX = PropertyValuesHolder.ofFloat("scaleX", 0.7f, 1f);
             PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("scaleY", 0.7f, 1f);
             ObjectAnimator scale = ObjectAnimator.ofPropertyValuesHolder(mViewPager, pvhX, pvhY);
@@ -277,6 +256,42 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
         }
     };
     private void initView(){
+        now_temperature=(TextView)findViewById(R.id.now_wendu);
+        now_temperature.setTypeface (Typeface.createFromAsset (getAssets(),"fonts/FZYTK.TTF" ));
+        describe=(TextView)findViewById(R.id.miao_shu);
+        describe.setTypeface (Typeface.createFromAsset (getAssets(),"fonts/FZYTK.TTF" ));
+        city=(TextView)findViewById(R.id.city);
+        mDragLayout = (DragLayout) findViewById(R.id.dl);
+        mDragLayout.setDrag(false);
+        ((MainContentLayout) findViewById(R.id.mainContent)).setDragLayout(mDragLayout);
+        mDragLayout.setOnLayoutDragingListener(new DragLayout.OnLayoutDragingListener() {
+            @Override
+            public void onOpen() {
+            }
+
+            @Override
+            public void onClose(){
+                if(login_flag==1){
+                    login_flag=0;
+                    startActivityForResult(new Intent(MainActivity.this,LoginActivity.class),2);
+                    overridePendingTransition(R.anim.left_in,0);
+                }
+                if(isExit)
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            finish();
+                        }
+                    },100);
+
+            }
+            @Override
+            public void onDraging(float percent) {
+                ViewHelper.setAlpha(titleLeftButton, 1 - percent);
+            }
+        });
+
+
         title_bar=findViewById(R.id.title_bar);
 
         progressBar=(ProgressBar)findViewById(R.id.progress_bar);
@@ -301,7 +316,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
         webpageAdapter=new WebPageAdapter(this, getSupportFragmentManager());
         mViewPager.setAdapter(webpageAdapter);
 
-        WebPage.webpagelist.add(WebViewFragment.newInstance(this,initWebView()));
+        WebPage.webpagelist.add(WebViewFragment.newInstance(initWebView()));
         webpageAdapter.notifyDataSetChanged(WebPageAdapter.ADDWEBPAGE);
         mViewPager.setOffscreenPageLimit(10);
 
@@ -319,6 +334,9 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 
         webRefresh= (Button) findViewById(R.id.web_refresh);
         webRefresh.setOnClickListener(this);
+
+        webStopLoading= (Button) findViewById(R.id.web_stopLoading);
+        webStopLoading.setOnClickListener(this);
 
         multiwindow= (Button) findViewById(R.id.multi_window);
         multiwindow.setOnClickListener(this);
@@ -350,10 +368,18 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 
             @Override
             public void onReceivedTitle(WebView view, String title) {
-                if(title.contains("https")||title.contains("http"))
+                //会加载几次
+                if(title.equals("")||title.contains("https")||title.contains("http"))
                     return;
                 else
                     insertTable(view.getUrl(),title);
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                progressBar.setVisibility(View.GONE);
+                webRefresh.setVisibility(View.VISIBLE);
+                webStopLoading.setVisibility(View.INVISIBLE);
                 if(!webView.canGoBack()){
                     webBack.setEnabled(false);
                 }else {
@@ -367,13 +393,12 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
             }
 
             @Override
-            public void onPageFinished(WebView view, String url) {
-                progressBar.setVisibility(View.GONE);
-            }
-
-            @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 progressBar.setVisibility(View.VISIBLE);
+                webBack.setEnabled(false);
+                next.setEnabled(false);
+                webRefresh.setVisibility(View.INVISIBLE);
+                webStopLoading.setVisibility(View.VISIBLE);
             }
 
             @Override
@@ -401,16 +426,17 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
     }
 
     private void insertTable(String url, String title){
-        int time=(int)Math.floor(System.currentTimeMillis()/1000);
+        SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+        String historyTime=format.format(new Date(System.currentTimeMillis()));
+        Log.d("rrr",""+historyTime);
         SQLiteDatabase db=mOpenHelper.getWritableDatabase();
         Cursor mCursor=db.query(SQLiteHelper.TB_NAME,null,"historyNAME=?",new String[]{title},null,null,null);
-        //Cursor mCursor=db.rawQuery("select * from "+SQLiteHelper.TB_NAME+" where historyNAME=?",new String[]{title});
         String sql,tip;
         if(mCursor.moveToFirst()){
-            sql="update "+SQLiteHelper.TB_NAME+" set historyTIME="+String.valueOf(time)+" where historyNAME='"+title+"'";
+            sql="update "+SQLiteHelper.TB_NAME+" set historyTIME='"+historyTime+"' where historyNAME='"+title+"'";
             tip="更新";
         }else{
-            sql="insert into "+SQLiteHelper.TB_NAME+"(historyURL,historyTIME,historyNAME) values('"+url+"','"+String.valueOf(time)+"','"+title+"')";
+            sql="insert into "+SQLiteHelper.TB_NAME+"(historyURL,historyTIME,historyNAME) values('"+url+"','"+historyTime+"','"+title+"')";
             tip="插入";
         }
         try{
@@ -433,7 +459,8 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
         }else{
             value=-2500;
         }
-        View selectedView=mViewPager.getChildAt(mViewPager.getCurrentItem());
+        View selectedView=WebPage.frameLayouts.get(mViewPager.getCurrentItem());
+        Log.d("appo","Left:"+selectedView.getLeft());
         Animation animation = new TranslateAnimation(selectedView.getLeft(),selectedView.getLeft(),viewTop,value);
         animation.setDuration(200);
         animation.setAnimationListener(new Animation.AnimationListener() {
@@ -445,12 +472,13 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
             @Override
             public void onAnimationEnd(Animation animation) {
                 WebPage.webpagelist.remove(mViewPager.getCurrentItem());
+                WebPage.frameLayouts.remove(mViewPager.getCurrentItem());
                 WebPage.webViews.remove(mViewPager.getCurrentItem());
                 WebPage.deleteItem=mViewPager.getCurrentItem();
                 webpageAdapter.notifyDataSetChanged(WebPageAdapter.DELETEWEBPAGE);
                 if (WebPage.webpagelist.size() == 0) {
                     first=true;
-                    WebPage.webpagelist.add(WebViewFragment.newInstance(MainActivity.this,initWebView()));
+                    WebPage.webpagelist.add(WebViewFragment.newInstance(initWebView()));
                     webpageAdapter.notifyDataSetChanged(WebPageAdapter.ADDWEBPAGE);
                     ZoomChange(1);
                 }
@@ -467,6 +495,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
     }
 
     private void fixWebPage(int position){
+        Log.d("appo","position:"+position);
         try {
             Field field = mViewPager.getClass().getField("mCurItem");
             field.setAccessible(true);
@@ -474,7 +503,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
         } catch (Exception e) {
             e.printStackTrace();
         }
-        webpageAdapter.notifyDataSetChanged(0);
+        webpageAdapter.notifyDataSetChanged();
         mViewPager.setCurrentItem(position);
     }
 }

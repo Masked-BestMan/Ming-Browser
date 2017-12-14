@@ -15,7 +15,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
     public static final String CREATE_HISTORYTB="create table historyTB(" +
             "historyID integer primary key autoincrement," +
             "historyURL text," +
-            "historyTIME text," +
+            "historyTIME date," +
             "historyNAME text)";
     public SQLiteHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
         super(context, name, factory, version);

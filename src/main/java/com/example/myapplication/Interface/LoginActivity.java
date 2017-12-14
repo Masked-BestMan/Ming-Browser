@@ -1,7 +1,6 @@
 package com.example.myapplication.Interface;
 
 
-import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -18,6 +17,7 @@ import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.example.myapplication.Components.SwipeBackActivity;
 import com.example.myapplication.R;
 import com.example.myapplication.Toolkit.HttpUtil;
 
@@ -26,7 +26,7 @@ import com.example.myapplication.Toolkit.HttpUtil;
  * Created by Zbm阿铭 on 2017/5/10.
  */
 
-public class LoginActivity extends Activity {
+public class LoginActivity extends SwipeBackActivity {
     private final int SUCCESS = 1;
     private final int FAIL = 0;
     private final int NOTNETWORK = -1;

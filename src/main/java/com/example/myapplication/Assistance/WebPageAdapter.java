@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.myapplication.Components.WebViewFragment;
@@ -14,14 +15,12 @@ import com.example.myapplication.Toolkit.WebPage;
  */
 
 public class WebPageAdapter extends FragmentPagerAdapter {
-    private Context context;
     private FragmentManager fm;
     public static final int ADDWEBPAGE=0;
     public static final int DELETEWEBPAGE=1;
     private int notifyType=1;
     public WebPageAdapter(Context context, FragmentManager fm) {
         super(fm);
-        this.context = context;
         this.fm=fm;
     }
 
@@ -66,4 +65,5 @@ public class WebPageAdapter extends FragmentPagerAdapter {
         }
         super.notifyDataSetChanged();
     }
+
 }

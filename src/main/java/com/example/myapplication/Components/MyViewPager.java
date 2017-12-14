@@ -3,6 +3,7 @@ package com.example.myapplication.Components;
 import android.content.Context;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
@@ -10,6 +11,8 @@ import android.widget.FrameLayout;
 
 
 import com.example.myapplication.Assistance.MessageEvent;
+import com.example.myapplication.Assistance.WebPageAdapter;
+import com.example.myapplication.Toolkit.WebPage;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -21,8 +24,7 @@ public class MyViewPager extends ViewPager implements OnGestureListener{
     private boolean isFullScreen=true;
     private OnLayoutClickListener lc;
     private GestureDetector gestureDetector;
-    private Context context;
-    private boolean canDelete=true;
+    private boolean canDel=true;
 
     public MyViewPager(Context context) {
         this(context,null);
@@ -30,7 +32,6 @@ public class MyViewPager extends ViewPager implements OnGestureListener{
 
     public MyViewPager(Context context, AttributeSet attrs) {
         super(context, attrs);
-        this.context=context;
             gestureDetector=new GestureDetector(context,this);
         this.addOnPageChangeListener(new OnPageChangeListener() {
             @Override
@@ -40,17 +41,15 @@ public class MyViewPager extends ViewPager implements OnGestureListener{
 
             @Override
             public void onPageSelected(int position) {
-
             }
 
             @Override
             public void onPageScrollStateChanged(int state) {
                 //防止viewpager在滚动中item仍可以上下滑动
                 if(state==SCROLL_STATE_IDLE){
-
-                    canDelete=true;
+                    canDel=true;
                 }else{
-                    canDelete=false;
+                    canDel=false;
                 }
             }
         });
@@ -63,13 +62,18 @@ public class MyViewPager extends ViewPager implements OnGestureListener{
         }
         return false;
     }
+
     private FrameLayout frameLayout;
     protected float point_x, point_y; //手指按下的位置
     private int left, right, top, bottom;
+    private int measureWidth,measureHeight;
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
         if (ev.getAction() == MotionEvent.ACTION_DOWN) {
-            frameLayout= (FrameLayout) getChildAt(getCurrentItem());
+            frameLayout= WebPage.frameLayouts.get(getCurrentItem());
+            measureWidth=frameLayout.getMeasuredWidth();
+            measureHeight=frameLayout.getMeasuredHeight();
+
             point_x = ev.getRawX();
             point_y = ev.getRawY();
             left = frameLayout.getLeft();
@@ -81,15 +85,20 @@ public class MyViewPager extends ViewPager implements OnGestureListener{
 
             float mov_x = ev.getRawX() - point_x;
             float mov_y = ev.getRawY() - point_y;
-            if(Math.abs(mov_x) < Math.abs(mov_y)&&canDelete)
+            if(Math.abs(mov_x) < Math.abs(mov_y)&&canDel){
+                frameLayout.measure(MeasureSpec.makeMeasureSpec(measureWidth,MeasureSpec.AT_MOST),MeasureSpec.makeMeasureSpec(measureHeight,MeasureSpec.AT_MOST));
                 frameLayout.layout(left, (int) mov_y, right, bottom + (int) mov_y);
+            }
+
         }
         if (ev.getAction() == MotionEvent.ACTION_UP){
             if(Math.abs(frameLayout.getTop())>frameLayout.getWidth()/2){
                 EventBus.getDefault().post(new MessageEvent(frameLayout.getTop()));
             }else {
+                frameLayout.measure(MeasureSpec.makeMeasureSpec(measureWidth,MeasureSpec.AT_MOST),MeasureSpec.makeMeasureSpec(measureHeight,MeasureSpec.AT_MOST));
                 frameLayout.layout(left,0,right,bottom);
             }
+                
         }
         gestureDetector.onTouchEvent(ev);
         return super.onTouchEvent(ev);

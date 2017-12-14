@@ -89,21 +89,23 @@
         android:background="#ff000000"
         android:orientation="vertical">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginBottom="50dp"
-            android:orientation="vertical">
+        <!--<LinearLayout-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:layout_marginBottom="50dp"-->
+            <!--android:orientation="vertical">-->
 
-            <LinearLayout
+            <RelativeLayout
                 android:id="@+id/title_bar"
                 android:layout_width="match_parent"
+                android:layout_alignParentTop="true"
+                android:paddingTop="25dp"
                 android:layout_height="65dp">
 
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:paddingTop="25dp">
+                <!--<RelativeLayout-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--android:layout_height="match_parent"-->
+                    <!--android:paddingTop="25dp">-->
 
                     <Button
                         android:id="@+id/title_left_button"
@@ -121,8 +123,8 @@
                         android:layout_height="40dp"
                         android:layout_alignParentEnd="true"
                         android:layout_marginEnd="5dp" />
-                </RelativeLayout>
-            </LinearLayout>
+                <!--</RelativeLayout>-->
+            </RelativeLayout>
 
             <RelativeLayout
                 android:id="@+id/my_relative_layout"
@@ -130,6 +132,8 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:layerType="software"
+                android:layout_marginTop="65dp"
+                android:layout_marginBottom="50dp"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
@@ -140,7 +144,7 @@
                     android:layout_height="match_parent" />
 
             </RelativeLayout>
-        </LinearLayout>
+        <!--</LinearLayout>-->
 
         <RelativeLayout
             android:id="@+id/bottom_toolbar"
@@ -155,13 +159,21 @@
                 android:layout_centerInParent="true"
                 android:background="@drawable/web_refresh" />
             <Button
+                android:id="@+id/web_stopLoading"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_centerInParent="true"
+                android:visibility="invisible"
+                android:background="@drawable/stop_web_loading"/>
+            <Button
                 android:id="@+id/web_next"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_marginEnd="30dp"
                 android:layout_centerVertical="true"
                 android:layout_toStartOf="@id/web_refresh"
-                android:text="后"
+                android:enabled="false"
+                android:background="@drawable/next_web_page"
                  />
             <Button
                 android:id="@+id/web_back"
@@ -170,7 +182,8 @@
                 android:layout_marginEnd="35dp"
                 android:layout_toStartOf="@id/web_next"
                 android:layout_centerVertical="true"
-                android:text="前"
+                android:enabled="false"
+                android:background="@drawable/last_web_page"
                 />
             <Button
                 android:id="@+id/multi_window"

@@ -3,6 +3,7 @@ package com.example.myapplication.Components;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,13 +11,14 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.FrameLayout;
 
 import com.example.myapplication.R;
+import com.example.myapplication.Toolkit.WebPage;
 
 
 public class WebViewFragment extends android.support.v4.app.Fragment{
     private static OnWebViewListener wl;
-    private static Context context;
     private WebView webView;
     private View cache;
 
@@ -25,8 +27,7 @@ public class WebViewFragment extends android.support.v4.app.Fragment{
         // Required empty public constructor
     }
 
-    public static WebViewFragment newInstance(Context c,OnWebViewListener onWebViewListener) {
-        context=c;
+    public static WebViewFragment newInstance(OnWebViewListener onWebViewListener) {
         WebViewFragment fragment = new WebViewFragment();
         wl=onWebViewListener;
         return fragment;
@@ -47,23 +48,32 @@ public class WebViewFragment extends android.support.v4.app.Fragment{
                     super.onReceivedTitle(view, title);
                     wl.onReceivedTitle(view,title);
                 }
+
+                @Override
+                public void onReceivedIcon(WebView view, Bitmap icon) {
+                    super.onReceivedIcon(view, icon);
+                }
             });
             webView.setWebViewClient(new WebViewClient() {
                 @Override
                 public boolean shouldOverrideUrlLoading(WebView view, String url) {
                     // TODO Auto-generated method stub
+                    //只有加载重定向网页才会调用
+                    Log.d("appo","shouldOverride");
                     return false;
                 }
 
                 @Override
                 public void onPageFinished(WebView view, String url) {
                     super.onPageFinished(view, url);
+                    Log.d("appo","onPageFinished");
                     wl.onPageFinished(view,url);
                 }
 
                 @Override
                 public void onPageStarted(WebView view, String url, Bitmap favicon) {
                     super.onPageStarted(view, url, favicon);
+                    Log.d("appo","onPageStarted");
                     wl.onPageStarted(view,url,favicon);
                 }
 
@@ -74,10 +84,11 @@ public class WebViewFragment extends android.support.v4.app.Fragment{
                     String data = "Page NO FOUND！";
                     view.loadUrl("javascript:document.body.innerHTML=\"" + data + "\"");
                 }
+
             });
             webView.loadUrl("http://wwww.baidu.com");
             wl.onGetWebView(webView);  //新添加的fragment
-
+            WebPage.frameLayouts.add((FrameLayout) cache.findViewById(R.id.frame_layout));
 
         }else{
             webView= (WebView) cache.findViewById(R.id.fragment_web_view);
