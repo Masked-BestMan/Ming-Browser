@@ -58,6 +58,7 @@ public class HistoryListAdapter extends BaseExpandableListAdapter implements IDo
         return childPosition;
     }
 
+    //因为要支持删除item，必须返回false
     @Override
     public boolean hasStableIds() {
         return false;
@@ -79,6 +80,7 @@ public class HistoryListAdapter extends BaseExpandableListAdapter implements IDo
             view.setTag(groupholder);
         }
         groupholder.date.setText(parentList.get(groupPosition));
+
         view.setTag(R.id.web_title, groupPosition); //设置-1表示长按时点击的是父项，到时好判断。
         view.setTag(R.id.web_url, -1);
         return view;
@@ -99,12 +101,13 @@ public class HistoryListAdapter extends BaseExpandableListAdapter implements IDo
             view.setTag(childHolder);
         }
 
-        view.setTag(R.id.web_title, groupPosition);
-        view.setTag(R.id.web_url, childPosition);
         HistoryItemBean historyItemBean=mHistoryData.get(parentList.get(groupPosition)).get(childPosition);
         childHolder.webTitle.setText(historyItemBean.getHistoryNAME());
-        String host=historyItemBean.getHistoryURI().split("/")[2];
+        String host=historyItemBean.getHistoryURI().split("/")[2];   //截取url的主机地址
         childHolder.webUrl.setText(host);
+
+        view.setTag(R.id.web_title, groupPosition);
+        view.setTag(R.id.web_url, childPosition);
         return view;
     }
 
@@ -115,17 +118,17 @@ public class HistoryListAdapter extends BaseExpandableListAdapter implements IDo
 
     @Override
     public int getDockingState(int firstVisibleGroup, int firstVisibleChild) {
-        // No need to draw header view if this group does not contain any child & also not expanded.
+        // 如果group没有child或者没有展开则不用画header view
         if (firstVisibleChild == -1 && !mListView.isGroupExpanded(firstVisibleGroup)) {
             return DOCKING_HEADER_HIDDEN;
         }
 
-        // Reaching current group's last child, preparing for docking next group header.
+        // 第一个可视child为当前组最后一个child, 准备替换下一组的header
         if (firstVisibleChild == getChildrenCount(firstVisibleGroup) - 1) {
             return IDockingController.DOCKING_HEADER_DOCKING;
         }
 
-        // Scrolling inside current group, header view is docked.
+        // 在当前组中滑动， header view固定.
         return IDockingController.DOCKING_HEADER_DOCKED;
     }
 

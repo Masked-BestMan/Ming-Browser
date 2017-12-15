@@ -5,13 +5,10 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ExpandableListView;
-import android.widget.ListView;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 import com.example.myapplication.Assistance.HistoryItemBean;
@@ -22,11 +19,6 @@ import com.example.myapplication.R;
 import com.example.myapplication.Toolkit.SQLiteHelper;
 import com.example.myapplication.Components.SwipeBackActivity;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -45,8 +37,8 @@ public class HistoryActivity extends SwipeBackActivity {
     private Button historyBack,emptyHistory;
     private SQLiteOpenHelper mOpenHelper;
     private Map<String,List<HistoryItemBean>> mHistoryData;
-    private List[] childrens;  //用于暂时记录子成员
-    private List<String> parentList;
+    private List[] children;  //用于暂时记录分组成员
+    private List<String> parentList;  //header view的日期标题
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,10 +59,11 @@ public class HistoryActivity extends SwipeBackActivity {
 
         final HistoryListAdapter adapter=new HistoryListAdapter(this,mList,parentList,mHistoryData);
         mList.setAdapter(adapter);
+
+
         mList.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @Override
             public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-                Log.d("appo","调用ChildClick");
                 HistoryItemBean hb=mHistoryData.get(parentList.get(groupPosition)).get(childPosition);
                 Intent intent=new Intent();
                 intent.putExtra("currentUri",hb.getHistoryURI());
@@ -82,6 +75,8 @@ public class HistoryActivity extends SwipeBackActivity {
             }
         });
         View headerView = getLayoutInflater().inflate(R.layout.history_of_date, mList, false);
+
+        //更新标题
         mList.setDockingHeader(headerView, new IDockingHeaderUpdateListener() {
             @Override
             public void onUpdate(View headerView, int groupPosition, boolean expanded) {
@@ -91,11 +86,10 @@ public class HistoryActivity extends SwipeBackActivity {
             }
         });
 
+        //长按删除item
         mList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                Log.d("zbm","position "+position);
-                //AlertDialog.Builder builder=new AlertDialog.Builder(HistoryActivity.this,0);
                 int groupPos = (Integer)view.getTag(R.id.web_title); //参数值是在setTag时使用的对应资源id号
                 int childPos = (Integer)view.getTag(R.id.web_url);
                 if(childPos!=-1){
@@ -118,6 +112,8 @@ public class HistoryActivity extends SwipeBackActivity {
                 adapter.notifyDataSetChanged();
             }
         });
+
+        //默认展开所有组
         for(int i = 0; i < adapter.getGroupCount(); i++)
             mList.expandGroup(i);
     }
@@ -131,17 +127,15 @@ public class HistoryActivity extends SwipeBackActivity {
         String yesterday=format.format(calendar.getTime());
         mHistoryData.clear();
         parentList.clear();
-        childrens=null;
+        children=null;
         SQLiteDatabase db=mOpenHelper.getWritableDatabase();
-        //Cursor mCursor=db.rawQuery("select * from "+SQLiteHelper.TB_NAME,null);
 
-        //查询10天内的历史记录
+        //查询3天内的历史记录
         Cursor mCursor=db.rawQuery("select * from "+SQLiteHelper.TB_NAME+" where historyTIME>=datetime('now','start of day','-3 day') and historyTIME<datetime('now','start of day','+0 day') order by historyTIME desc",null);
         //先计算有多少个组
         if(mCursor.moveToFirst()){
             do{
                 String date=mCursor.getString(mCursor.getColumnIndex("historyTIME"));
-                Log.d("appo","date"+date);
                 //需要添加头节点
                 if(!lastDate.equals(date)){
                     if(currentDate.equals(date)){
@@ -158,13 +152,11 @@ public class HistoryActivity extends SwipeBackActivity {
                 }
                 lastDate=date;
              }while (mCursor.moveToNext());
-            Log.d("appo","parent:"+parentList);
-            childrens=new List[parentList.size()];
-            Log.d("appo","children size:"+childrens.length);
+            children=new List[parentList.size()];
             //接着再计算成员
             mCursor.moveToFirst();
             for (int i=0;i<parentList.size();i++){
-                childrens[i]=new ArrayList<HistoryItemBean>();
+                children[i]=new ArrayList<HistoryItemBean>();
             }
             lastDate="";
             do{
@@ -175,15 +167,13 @@ public class HistoryActivity extends SwipeBackActivity {
                 String id=mCursor.getString(mCursor.getColumnIndex("historyID"));
                 String name=mCursor.getString(mCursor.getColumnIndex("historyNAME"));
                 String url=mCursor.getString(mCursor.getColumnIndex("historyURL"));
-                Log.d("appo","key:"+key);
-                childrens[key].add(0,new HistoryItemBean(Integer.parseInt(id),name,url));
+                children[key].add(0,new HistoryItemBean(Integer.parseInt(id),name,url));
                 lastDate=date;
             }while (mCursor.moveToNext());
 
             //该步把所有组加入list
-            for (int i=0;i<childrens.length;i++){
-                Log.d("appo","children"+i+" size:"+childrens[i].size());
-                mHistoryData.put(parentList.get(i),childrens[i]);
+            for (int i=0;i<children.length;i++){
+                mHistoryData.put(parentList.get(i),children[i]);
             }
         }
         mCursor.close();
