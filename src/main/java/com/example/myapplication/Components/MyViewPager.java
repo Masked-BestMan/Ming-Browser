@@ -3,7 +3,6 @@ package com.example.myapplication.Components;
 import android.content.Context;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
@@ -11,7 +10,6 @@ import android.widget.FrameLayout;
 
 
 import com.example.myapplication.Assistance.MessageEvent;
-import com.example.myapplication.Assistance.WebPageAdapter;
 import com.example.myapplication.Toolkit.WebPage;
 
 import org.greenrobot.eventbus.EventBus;

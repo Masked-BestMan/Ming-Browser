@@ -34,7 +34,6 @@ public class LoginActivity extends SwipeBackActivity {
     private RelativeLayout background;
     private Button button, login, register;
     private EditText account, password;
-    private InputMethodManager inputMethodManager;
     private Handler mHandler = new Handler(Looper.myLooper()) {
         @Override
         public void handleMessage(Message msg) {

@@ -1,9 +1,9 @@
 package com.example.myapplication.Toolkit;
 
-import android.webkit.WebView;
 import android.widget.FrameLayout;
 
 import com.example.myapplication.Components.WebViewFragment;
+import com.tencent.smtt.sdk.WebView;
 
 import java.util.ArrayList;
 import java.util.List;

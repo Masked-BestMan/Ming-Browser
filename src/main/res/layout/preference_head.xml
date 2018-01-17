@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="65dp"
+    android:background="#000">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingTop="25dp">
+        <Button
+            android:id="@+id/config_back"
+            android:layout_width="38dip"
+            android:layout_height="38dip"
+            android:background="@drawable/close_window"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/config_back"
+            android:layout_alignBottom="@+id/config_back"
+            android:layout_centerHorizontal="true"
+            android:text="更多设置"
+            android:textColor="#fff"
+            android:textSize="17sp" />
+    </RelativeLayout>
+</LinearLayout>

@@ -3,4 +3,9 @@
     <declare-styleable name="HeadPortraitView">
         <attr name="src" format="reference"/>
     </declare-styleable>
+    <declare-styleable name="PreferenceWithRightIcon">
+        <attr name="left_title" format="string"/>
+        <attr name="right_title" format="string"/>
+        <attr name="type" format="integer" />
+    </declare-styleable>
 </resources>

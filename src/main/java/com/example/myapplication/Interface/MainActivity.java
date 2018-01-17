@@ -12,6 +12,7 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Bitmap;
+import android.graphics.PixelFormat;
 import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.os.Build;
@@ -27,7 +28,6 @@ import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.InputMethodManager;
-import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -45,6 +45,7 @@ import com.example.myapplication.Toolkit.WebPage;
 import com.example.myapplication.Assistance.WebPageAdapter;
 import com.example.myapplication.Components.WebViewFragment;
 import com.nineoldandroids.view.ViewHelper;
+import com.tencent.smtt.sdk.WebView;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -67,22 +68,24 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
     private DragLayout mDragLayout;
     private TextView now_temperature,describe,city;
     private View toolbarBackground,webPageControlBackground,title_bar;
-    private Button titleLeftButton,webBack,addWebPage,next,exit,history,webStopLoading,multiwindow,webRefresh;
+    private Button titleLeftButton,webBack,addWebPage,next,exit,config,history,webStopLoading,multiwindow,webRefresh;
     private SQLiteOpenHelper mOpenHelper;
     private InputMethodManager mInputMethodManager;
     private HeadPortraitView headPortrait;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().setFormat(PixelFormat.TRANSLUCENT);
         mOpenHelper=new SQLiteHelper(this,"historyDB",null,1);
         mInputMethodManager=(InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
         if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.KITKAT){
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         }
+
         setContentView(R.layout.activity_main);
         initView();
 
-        startService(new Intent(MainActivity.this,WeatherService.class));
+        startService(new Intent(this,WeatherService.class));
 
         //网络状态变化广播监听
         IntentFilter mFilter = new IntentFilter();
@@ -101,6 +104,12 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
         now_temperature.setText(preferences.getString("wendu","")+"°");
         describe.setText(preferences.getString("ganmao","无天气信息"));
         city.setText(preferences.getString("cityName"," "));
+        SharedPreferences settings=PreferenceManager.getDefaultSharedPreferences(this);
+        String name= settings.getString("namePref","User");
+        if (webView!=null){
+            webView.getSettings().setTextZoom(Integer.valueOf(preferences.getString("text_size","100")));
+        }
+        Log.d("appo","name:"+name);
     }
 
     @Override
@@ -158,9 +167,11 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
             case R.id.web_refresh:
                 webView.reload();
                 break;
+
             case R.id.web_stopLoading:
                 webView.stopLoading();
                 break;
+
             case R.id.web_back:
                 webView.goBack();
                 break;
@@ -168,6 +179,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
             case R.id.web_next:
                 webView.goForward();
                 break;
+
            case R.id.multi_window:
                 ZoomChange(0);
                 break;
@@ -182,14 +194,21 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
                     ZoomChange(1);
                 }
                 break;
+
             case R.id.app_exit:
                 isExit=true;
                 mDragLayout.close();
                 break;
+
+            case R.id.config:
+                mDragLayout.close();
+                startActivity(new Intent(this, ConfigActivity.class));
+                overridePendingTransition(R.anim.left_in,0);
+                break;
+
             case R.id.head_portrait:
                 login_flag=1;
                 mDragLayout.close();
-
                 break;
         }
     }
@@ -346,6 +365,9 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 
         exit= (Button) findViewById(R.id.app_exit);
         exit.setOnClickListener(this);
+
+        config=(Button)findViewById(R.id.config);
+        config.setOnClickListener(this);
 
         headPortrait= (HeadPortraitView) findViewById(R.id.head_portrait);
         headPortrait.setOnClickListener(this);

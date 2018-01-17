@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <com.example.myapplication.MyPreference.PreferenceHead android:key="configHead" />
+    <PreferenceCategory
+        android:title="">
+        <com.example.myapplication.MyPreference.PreferenceWithRightIcon
+            app:type="1"
+            app:left_title="流量消耗" />
+        <EditTextPreference
+            android:defaultValue="User"
+            android:key="namePref"
+            android:summary="Tell Us Your Name"
+            android:title="Name" />
+        <ListPreference
+            android:defaultValue="100"
+            android:key="text_size"
+            android:title="字体调整"
+            android:dialogTitle="选择一项"
+            android:entries="@array/size_name"
+            android:entryValues="@array/size_value"/>
+        <com.example.myapplication.MyPreference.PreferenceWithRightIcon
+            app:left_title="字体大小"
+            android:fragment="com.example.myapplication.MyPreference.SettingsFragment"/>
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="">
+        <Preference
+            android:key="restore_default"
+            android:title="恢复默认" />
+    </PreferenceCategory>
+</PreferenceScreen>

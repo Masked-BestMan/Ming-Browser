@@ -1,20 +1,20 @@
 package com.example.myapplication.Components;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebChromeClient;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 
 import com.example.myapplication.R;
 import com.example.myapplication.Toolkit.WebPage;
+import com.tencent.smtt.sdk.WebChromeClient;
+import com.tencent.smtt.sdk.WebSettings;
+import com.tencent.smtt.sdk.WebView;
+import com.tencent.smtt.sdk.WebViewClient;
 
 
 public class WebViewFragment extends android.support.v4.app.Fragment{
@@ -53,6 +53,7 @@ public class WebViewFragment extends android.support.v4.app.Fragment{
                 public void onReceivedIcon(WebView view, Bitmap icon) {
                     super.onReceivedIcon(view, icon);
                 }
+
             });
             webView.setWebViewClient(new WebViewClient() {
                 @Override
@@ -120,16 +121,25 @@ public class WebViewFragment extends android.support.v4.app.Fragment{
 
     private void setSettings(WebSettings setting) {
         setting.setJavaScriptEnabled(true);
+        setting.setJavaScriptCanOpenWindowsAutomatically(true);
         setting.setAllowFileAccess(true);
+        setting.setSupportZoom(true);
+        setting.setBuiltInZoomControls(true);
+        setting.setCacheMode(WebSettings.LOAD_NO_CACHE);
+        setting.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NARROW_COLUMNS);
+        setting.setSupportMultipleWindows(false);
         setting.setDomStorageEnabled(true);
-        setting.setDatabaseEnabled(true);
-        setting.setSaveFormData(false);
         setting.setAppCacheEnabled(true);
-        setting.setPluginState(WebSettings.PluginState.ON);
-        setting.setCacheMode(WebSettings.LOAD_DEFAULT);
+        setting.setGeolocationEnabled(true);
+        setting.setAppCacheMaxSize(Long.MAX_VALUE);
+        setting.setAppCachePath(getActivity().getDir("appcache", 0).getPath());
+        setting.setDatabasePath(getActivity().getDir("databases", 0).getPath());
+        setting.setGeolocationDatabasePath(getActivity().getDir("geolocation", 0)
+                .getPath());
+        setting.setPluginState(WebSettings.PluginState.ON_DEMAND);
         // 全屏显示
-        setting.setLoadWithOverviewMode(false);
         setting.setUseWideViewPort(true);
+        setting.setTextZoom(Integer.valueOf(PreferenceManager.getDefaultSharedPreferences(getContext()).getString("text_size","100")));
     }
 
     public interface OnWebViewListener{

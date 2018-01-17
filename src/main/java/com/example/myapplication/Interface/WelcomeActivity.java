@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.TextView;
@@ -21,6 +22,7 @@ public class WelcomeActivity extends Activity {
         setContentView(R.layout.welcome);
         textView=(TextView)findViewById(R.id.textView);
         textView.setTypeface (Typeface.createFromAsset (getAssets(),"fonts/FZYTK.TTF" ));
+        PreferenceManager.setDefaultValues(this,R.xml.pref_settings,true);
     }
 
     @Override
